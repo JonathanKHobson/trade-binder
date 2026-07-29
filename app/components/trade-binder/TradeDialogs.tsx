@@ -12,15 +12,21 @@ import { buildTradeCsv, buildTradeRequest, buildTradeText, buildTradeXml, downlo
 import type { Card, ColorMode, Comparator } from "../../data/types";
 import { ModalFrame } from "./ModalFrame";
 
+type FilterOption = string | { value: string; label: string };
+
 type FilterSelectProps = {
   label: string;
   value: string;
   onChange: (value: string) => void;
-  options: string[];
+  options: FilterOption[];
 };
 
 function FilterSelect({ label, value, onChange, options }: FilterSelectProps) {
-  return <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}><option value="">Any {label.toLowerCase()}</option>{options.map((option) => <option key={option} value={option}>{label === "Set" ? option.toUpperCase() : titleCase(option)}</option>)}</select></label>;
+  return <label className="field"><span>{label}</span><select value={value} onChange={(event) => onChange(event.target.value)}><option value="">Any {label.toLowerCase()}</option>{options.map((option) => {
+    const value = typeof option === "string" ? option : option.value;
+    const optionLabel = typeof option === "string" ? (label === "Set" ? option.toUpperCase() : titleCase(option)) : option.label;
+    return <option key={value} value={value}>{optionLabel}</option>;
+  })}</select></label>;
 }
 
 type AdvancedFiltersProps = {
@@ -34,7 +40,9 @@ type AdvancedFiltersProps = {
 export function AdvancedFilters({ cards, filters, setFilters, onClose, onReset }: AdvancedFiltersProps) {
   const change = <Key extends keyof Filters>(key: Key, value: Filters[Key]) => setFilters({ ...filters, [key]: value });
   const toggleColor = (color: string) => change("colors", filters.colors.includes(color) ? filters.colors.filter((item) => item !== color) : [...filters.colors, color]);
-  const tradabilityOptions = Array.from(new Set(cards.map((card) => card.tradability.key))).sort((left, right) => left.localeCompare(right));
+  const tradabilityOptions = Array.from(new Map(cards.map((card) => [card.tradability.key, card.tradability.label])).entries())
+    .sort((left, right) => left[1].localeCompare(right[1]))
+    .map(([value, label]) => ({ value, label }));
   return (
     <ModalFrame className="filter-sheet" labelledBy="filter-heading" onClose={onClose}>
       <header className="sheet-header"><div><p className="eyebrow">Advanced search</p><h2 id="filter-heading">Find the exact print</h2><p>Search rules text, print details, condition, price, and color identity. Results update as you refine.</p></div><button className="icon-button" type="button" onClick={onClose} aria-label="Close advanced search">×</button></header>
