@@ -29,7 +29,7 @@ Deliver a finished, light-first public Trade Binder: dense physical-card browsin
 - `public/data/cards.json` is a read-only collection snapshot. Refresh it from the canonical collection generator; do not hand-edit it.
 - `public/assets/mana/` owns the mana symbols used by the color-identity filter; `public/assets/local-card-images/` mirrors snapshot-referenced local image files.
 - `scripts/build-github-pages.mjs` builds and copies the static root documents used by GitHub Pages.
-- `.github/workflows/deploy-pages.yml` is the only production deployment route. It uploads `dist/client/` to GitHub Pages.
+- The generated `gh-pages` branch is the production deployment route. It contains the static `dist/client/` artifact built by `scripts/build-github-pages.mjs`.
 - `tests/inventory-and-exports.test.mjs` locks the duplicate-merge contract and exact-print export fields; `tests/rendered-html.test.mjs` checks the server-rendered shell.
 - `public/og.png` is the accepted light-mode social preview.
 

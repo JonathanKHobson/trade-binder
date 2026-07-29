@@ -30,6 +30,6 @@ npm test
 npm run build:pages
 ```
 
-`npm run build:pages` prerenders the client and prepares `dist/client/` for the GitHub Pages workflow. The live GitHub Pages deployment is defined in [`.github/workflows/deploy-pages.yml`](.github/workflows/deploy-pages.yml).
+`npm run build:pages` prerenders the client and prepares `dist/client/` for the generated `gh-pages` release branch. Do not hand-edit that branch; it is the static deployment artifact for the public GitHub Pages site.
 
 See [docs/project-map.md](docs/project-map.md) for source ownership and deployment boundaries.
