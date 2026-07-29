@@ -5,6 +5,8 @@ export type Filters = {
   text: string;
   oracle: string;
   binder: string;
+  owner: string;
+  tradability: string;
   set: string;
   type: string;
   rarity: string;
@@ -26,6 +28,8 @@ export const emptyFilters: Filters = {
   text: "",
   oracle: "",
   binder: "",
+  owner: "",
+  tradability: "",
   set: "",
   type: "",
   rarity: "",
@@ -48,6 +52,9 @@ export function distinct(cards: Card[], field: keyof Card) {
     new Set(cards.map((card) => String(card[field] || "")).filter(Boolean)),
   ).sort((left, right) => left.localeCompare(right));
 }
+
+export const distinctBinderNames = (cards: Card[]) => Array.from(new Set(cards.flatMap((card) => card.sourceBinders?.length ? card.sourceBinders : [card.binderName]))).sort((left, right) => left.localeCompare(right));
+export const distinctLocations = (cards: Card[]) => Array.from(new Set(cards.flatMap((card) => card.sourceLocations?.length ? card.sourceLocations : [card.publicLocation]))).sort((left, right) => left.localeCompare(right));
 
 function matchesColors(card: Card, filters: Filters) {
   if (filters.colors.length === 0) return true;
@@ -80,18 +87,20 @@ export function filterCards(cards: Card[], filters: Filters, sort: SortMode) {
   const query = filters.text.trim().toLowerCase();
   const oracle = filters.oracle.trim().toLowerCase();
   return sortCards(cards.filter((card) => {
-    const queryText = [card.name, card.setName, card.setCode, card.typeLine, card.binderName].join(" ").toLowerCase();
+    const queryText = [card.name, card.setName, card.setCode, card.typeLine, card.owner, card.tradability.label, ...card.sourceBinders, ...card.sourceLocations].join(" ").toLowerCase();
     return (
       (!query || queryText.includes(query)) &&
       (!oracle || card.oracleText.toLowerCase().includes(oracle)) &&
-      (!filters.binder || card.binderName === filters.binder) &&
+      (!filters.binder || card.sourceBinders.includes(filters.binder)) &&
+      (!filters.owner || card.owner === filters.owner) &&
+      (!filters.tradability || card.tradability.key === filters.tradability) &&
       (!filters.set || card.setCode === filters.set) &&
       (!filters.type || card.typeBucket === filters.type) &&
       (!filters.rarity || card.rarity === filters.rarity) &&
       (!filters.finish || card.finish === filters.finish) &&
       (!filters.condition || card.condition === filters.condition) &&
       (!filters.language || card.language === filters.language) &&
-      (!filters.location || card.publicLocation === filters.location) &&
+      (!filters.location || card.sourceLocations.includes(filters.location)) &&
       (!filters.altered || card.altered) &&
       (!filters.playtest || card.homebrew || card.proxy) &&
       matchesColors(card, filters) &&

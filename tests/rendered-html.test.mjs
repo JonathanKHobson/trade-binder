@@ -28,7 +28,7 @@ test("server-renders the Trade Binder prototype shell", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Trade Binder \| Homebrew Forge<\/title>/i);
+  assert.match(html, /<title>Trade Binder<\/title>/i);
   assert.match(html, /Loading the Trade Binder/);
   assert.match(html, /Indexing prints, conditions, and collection details/);
   assert.doesNotMatch(html, /react-loading-skeleton|Building your site|Your site is taking shape/i);

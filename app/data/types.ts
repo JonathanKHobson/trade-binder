@@ -2,7 +2,12 @@ export type Card = {
   id: string;
   name: string;
   quantity: number;
+  owner: string;
+  ownershipStatus: string;
   binderName: string;
+  sourceBinders: string[];
+  scryfallId: string;
+  scryfallUri: string;
   setCode: string;
   setName: string;
   collectorNumber: string;
@@ -10,6 +15,7 @@ export type Card = {
   condition: string;
   language: string;
   publicLocation: string;
+  sourceLocations: string[];
   marketPrice: number | null;
   marketTotal: number | null;
   rarity: string;
@@ -23,9 +29,11 @@ export type Card = {
   imageUrl: string;
   largeImageUrl: string;
   altered: boolean;
+  misprint: boolean;
   proxy: boolean;
   homebrew: boolean;
-  tradability: { key: string; label: string; rank: number };
+  tradeStatus: string;
+  tradability: { key: string; label: string; rank: number; reason: string };
 };
 
 export type BinderData = {

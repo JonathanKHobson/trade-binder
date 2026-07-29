@@ -1,12 +1,12 @@
 import type { Card, Comparator } from "./types";
 
 export const colorMeta = [
-  { code: "W", label: "White", symbol: "☼" },
-  { code: "U", label: "Blue", symbol: "◌" },
-  { code: "B", label: "Black", symbol: "◐" },
-  { code: "R", label: "Red", symbol: "✦" },
-  { code: "G", label: "Green", symbol: "✿" },
-  { code: "C", label: "Colorless", symbol: "◇" },
+  { code: "W", label: "White", asset: "./assets/mana/W.svg" },
+  { code: "U", label: "Blue", asset: "./assets/mana/U.svg" },
+  { code: "B", label: "Black", asset: "./assets/mana/B.svg" },
+  { code: "R", label: "Red", asset: "./assets/mana/R.svg" },
+  { code: "G", label: "Green", asset: "./assets/mana/G.svg" },
+  { code: "C", label: "Colorless", asset: "./assets/mana/C.svg" },
 ] as const;
 
 export const formatMoney = (value: number | null | undefined) =>
