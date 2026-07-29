@@ -5,7 +5,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import { useState } from "react";
-import { sourceLabel } from "../../data/inventory";
+import { isTradeRequestable, sourceLabel } from "../../data/inventory";
 import { colorMeta, escapeForMail, formatMoney, titleCase } from "../../data/mtg";
 import { distinct, distinctBinderNames, distinctLocations, type Filters } from "../../data/tradeBrowser";
 import { buildTradeCsv, buildTradeRequest, buildTradeText, buildTradeXml, downloadTradeSelection } from "../../data/tradeExports";
@@ -58,7 +58,7 @@ type CardPreviewProps = {
 };
 
 export function CardPreview({ card, selected, wanted, onClose, onToggleSelected, onToggleWanted }: CardPreviewProps) {
-  const requestable = !["not_for_trade", "not_tradable", "reserved", "traded"].includes(card.tradability.key);
+  const requestable = isTradeRequestable(card);
   return <ModalFrame className="preview-dialog" labelledBy="preview-card-title" onClose={onClose}><button type="button" className="icon-button preview-close" onClick={onClose} aria-label="Close card preview">×</button><img src={card.largeImageUrl || card.imageUrl} alt="" /><div className="preview-copy"><p className="eyebrow">{card.setName} · {card.setCode.toUpperCase()} {card.collectorNumber}</p><h2 id="preview-card-title">{card.name}</h2><p>{card.typeLine}</p><p className={`inquiry-copy ${requestable ? "" : "not-tradable-copy"}`}>{card.tradability.label} · {card.tradability.reason}</p><dl><div><dt>Owner</dt><dd>{card.owner}</dd></div><div><dt>Quantity</dt><dd>{card.quantity} {card.quantity === 1 ? "copy" : "copies"}</dd></div><div><dt>Finish</dt><dd>{titleCase(card.finish)}</dd></div><div><dt>Condition</dt><dd>{titleCase(card.condition)}</dd></div><div><dt>From</dt><dd>{sourceLabel(card.sourceBinders)}</dd></div><div><dt>Market snapshot</dt><dd>{formatMoney(card.marketPrice)}</dd></div></dl><div className="dialog-button-row"><button type="button" className="secondary-action" onClick={onToggleWanted}>{wanted ? "Remove from wants" : "Add to wants"}</button>{requestable && <button type="button" className="primary-action" onClick={onToggleSelected}>{selected ? "Remove from trade list" : "Add to trade list"}</button>}</div></div></ModalFrame>;
 }
 
