@@ -40,4 +40,7 @@ export type BinderData = {
 
 export type Comparator = "eq" | "gt" | "lt";
 export type ColorMode = "any" | "all" | "exact";
-export type ViewMode = "visual" | "details" | "compact";
+export type ViewMode = "grid" | "details" | "list" | "focus";
+export type SortMode = "name" | "price-high" | "price-low" | "set";
+export type BinderSection = "browse" | "wants" | "contact" | "homebrew";
+export type ThemeMode = "light" | "dark";

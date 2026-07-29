@@ -1,12 +1,12 @@
 import type { Card, Comparator } from "./types";
 
 export const colorMeta = [
-  { code: "W", label: "White", symbol: "W" },
-  { code: "U", label: "Blue", symbol: "U" },
-  { code: "B", label: "Black", symbol: "B" },
-  { code: "R", label: "Red", symbol: "R" },
-  { code: "G", label: "Green", symbol: "G" },
-  { code: "C", label: "Colorless", symbol: "C" },
+  { code: "W", label: "White", symbol: "☼" },
+  { code: "U", label: "Blue", symbol: "◌" },
+  { code: "B", label: "Black", symbol: "◐" },
+  { code: "R", label: "Red", symbol: "✦" },
+  { code: "G", label: "Green", symbol: "✿" },
+  { code: "C", label: "Colorless", symbol: "◇" },
 ] as const;
 
 export const formatMoney = (value: number | null | undefined) =>
@@ -41,3 +41,5 @@ export const comparatorMatches = (
 };
 
 export const escapeForMail = (value: string) => encodeURIComponent(value);
+
+export const colorLabel = (code: string) => colorMeta.find((color) => color.code === code)?.label || "Colorless";
