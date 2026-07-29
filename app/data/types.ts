@@ -33,6 +33,8 @@ export type Card = {
   proxy: boolean;
   homebrew: boolean;
   tradeStatus: string;
+  sourceTradeStatus?: string;
+  tradeNotes?: string;
   tradability: { key: string; label: string; rank: number; reason: string };
 };
 

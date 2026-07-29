@@ -1,6 +1,6 @@
 import type { Card } from "./types";
 
-const requestableStatuses = new Set(["not_for_trade", "not_tradable", "reserved", "traded"]);
+const protectedSourceStatuses = new Set(["not_tradable", "reserved", "traded"]);
 
 const unique = (values: string[]) => Array.from(new Set(values.filter(Boolean))).sort((left, right) => left.localeCompare(right));
 
@@ -58,8 +58,59 @@ export function consolidatePrints(cards: Card[]): Card[] {
   });
 }
 
+/**
+ * Bulk imports used `not_for_trade` as their default, not as a reviewed trade
+ * decision. The public binder therefore treats ordinary cards as a question,
+ * never a promise. Only explicit protections remain unavailable.
+ */
+export function applyPublicTradePolicy(cards: Card[]): Card[] {
+  return cards.map((card) => {
+    const sourceTradeStatus = String(card.sourceTradeStatus ?? card.tradeStatus ?? "").trim().toLowerCase();
+    const explicitlyProtected = protectedSourceStatuses.has(sourceTradeStatus)
+      || (sourceTradeStatus === "not_for_trade" && Boolean(card.tradeNotes?.trim()))
+      || card.proxy
+      || card.owner === "Eleni"
+      || /dogmeat/i.test(card.name)
+      || (card.sourceBinders || [card.binderName]).includes("Custom Token Photos");
+
+    if (explicitlyProtected) {
+      const reason = card.tradeNotes?.trim()
+        || card.tradability.reason
+        || "Previously marked as unavailable for trade.";
+      return {
+        ...card,
+        sourceTradeStatus,
+        tradeStatus: "not_available",
+        tradability: {
+          ...card.tradability,
+          key: "not_available",
+          label: "Not available for trade",
+          rank: 4,
+          reason,
+        },
+      };
+    }
+
+    const reason = card.quantity > 1
+      ? "Multiple copies are recorded. Ask Kyle whether a copy can be traded."
+      : "Availability has not been reviewed. Ask Kyle before treating this card as tradeable.";
+    return {
+      ...card,
+      sourceTradeStatus,
+      tradeStatus: "ask_about_trade",
+      tradability: {
+        ...card.tradability,
+        key: "ask_about_trade",
+        label: "Ask about trade",
+        rank: 2,
+        reason,
+      },
+    };
+  });
+}
+
 export function isTradeRequestable(card: Card) {
-  return !requestableStatuses.has(card.tradeStatus) && !requestableStatuses.has(card.tradability.key);
+  return card.tradability.key === "ask_about_trade";
 }
 
 export function sourceLabel(values: string[]) {

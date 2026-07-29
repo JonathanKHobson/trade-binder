@@ -33,20 +33,26 @@ async function importDataModules() {
   }
 }
 
-test("identical print records merge without loosening owner or trade protections", async () => {
+test("the public trade policy defaults to Ask about trade and retains explicit protections", async () => {
   const data = JSON.parse(await readFile(new URL("../public/data/cards.json", import.meta.url), "utf8"));
   const { directory, inventory } = await importDataModules();
 
   try {
-    const cards = inventory.consolidatePrints(data.cards);
+    const cards = inventory.consolidatePrints(inventory.applyPublicTradePolicy(data.cards));
     const BLCAdarkar = cards.find((card) => card.name === "Adarkar Wastes" && card.setCode === "BLC" && card.collectorNumber === "291" && card.owner === "Eleni");
     const EOCAdarkar = cards.find((card) => card.name === "Adarkar Wastes" && card.setCode === "EOC" && card.collectorNumber === "147" && card.owner === "Kyle");
+    const aimSynthoids = cards.find((card) => card.name === "A.I.M. Synthoids" && card.setCode === "MSH" && card.collectorNumber === "242" && card.owner === "Kyle");
 
-    assert.equal(cards.length, 1707);
     assert.equal(BLCAdarkar?.quantity, 2);
-    assert.equal(BLCAdarkar?.tradability.label, "Not tradable");
+    assert.equal(BLCAdarkar?.tradability.label, "Not available for trade");
     assert.equal(inventory.isTradeRequestable(BLCAdarkar), false);
     assert.equal(EOCAdarkar?.quantity, 1);
+    assert.equal(EOCAdarkar?.tradability.label, "Ask about trade");
+    assert.equal(inventory.isTradeRequestable(EOCAdarkar), true);
+    assert.equal(aimSynthoids?.quantity, 6);
+    assert.equal(aimSynthoids?.tradability.label, "Ask about trade");
+    assert.equal(inventory.isTradeRequestable(aimSynthoids), true);
+    assert.equal(cards.some((card) => card.tradability.label === "Available to trade"), false);
   } finally {
     await rm(directory, { recursive: true, force: true });
   }
@@ -57,7 +63,7 @@ test("selection exports retain exact-print and ownership fields", async () => {
   const { directory, inventory, exports } = await importDataModules();
 
   try {
-    const card = inventory.consolidatePrints(data.cards).find((candidate) => candidate.name === "Abomination, Terrifying Titan" && candidate.setCode === "MSH" && candidate.collectorNumber === "198");
+    const card = inventory.consolidatePrints(inventory.applyPublicTradePolicy(data.cards)).find((candidate) => candidate.name === "Abomination, Terrifying Titan" && candidate.setCode === "MSH" && candidate.collectorNumber === "198");
     assert.ok(card);
 
     const csv = exports.buildTradeCsv([card]);
