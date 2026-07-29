@@ -4,8 +4,7 @@
  * generated public inventory, so native images preserve exact print identity. */
 /* eslint-disable @next/next/no-img-element */
 
-import { cardColors, colorLabel, formatMoney, titleCase } from "../../data/mtg";
-import { isTradeRequestable } from "../../data/inventory";
+import { cardColors, colorLabel, colorMeta, formatMoney, titleCase } from "../../data/mtg";
 import type { Card, ViewMode } from "../../data/types";
 
 type CardViewProps = {
@@ -18,21 +17,36 @@ type CardViewProps = {
   onPreview: () => void;
 };
 
-function ColorDots({ card }: { card: Card }) {
+function ManaSymbols({ card }: { card: Card }) {
   const colors = cardColors(card);
-  return <span className="color-dots" aria-label={`Color identity: ${colors.map(colorLabel).join(", ")}`}>{colors.map((color) => <i key={color} className={`color-dot color-${color}`} />)}</span>;
+  return <span className="mana-symbols" aria-label={`Color identity: ${colors.map(colorLabel).join(", ")}`}>{colors.map((color) => {
+    const meta = colorMeta.find((item) => item.code === color);
+    return meta ? <img key={color} src={meta.asset} alt="" /> : null;
+  })}</span>;
 }
 
 function TradeStatusPill({ card }: { card: Card }) {
   return <span className={`inquiry-pill status-${card.tradability.key}`}>{card.tradability.label}</span>;
 }
 
+type SelectionControlProps = {
+  cardName: string;
+  selected: boolean;
+  onToggle: () => void;
+  className?: string;
+  label?: string;
+};
+
+export function SelectionControl({ cardName, selected, onToggle, className = "", label }: SelectionControlProps) {
+  const action = selected ? "Remove" : "Select";
+  return <label className={`selection-check ${className}`} title={`${action} ${cardName}`}><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`${action} ${cardName} for export, sharing, or a trade request`} /><span aria-hidden="true">✓</span>{label && <b>{label}</b>}</label>;
+}
+
 export function CardView({ card, view, selected, wanted, onToggleSelected, onToggleWanted, onPreview }: CardViewProps) {
-  const requestable = isTradeRequestable(card);
   if (view === "list") {
     return (
       <article className={`list-card ${selected ? "is-selected" : ""}`}>
-        <label className="check-control"><input type="checkbox" checked={selected} onChange={onToggleSelected} disabled={!requestable} aria-label={`${requestable ? "Add" : "Do not trade"} ${card.name}`} /><span /></label>
+        <SelectionControl className="list-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} />
         <button type="button" className="list-card-name" onClick={onPreview}>{card.name}</button>
         <span className="list-card-print">{card.setCode.toUpperCase()} {card.collectorNumber} · {card.owner} · {card.quantity} {card.quantity === 1 ? "copy" : "copies"}</span>
         <span className="list-card-type">{card.typeBucket}</span>
@@ -47,6 +61,7 @@ export function CardView({ card, view, selected, wanted, onToggleSelected, onTog
     <article className={`card-tile ${view === "details" ? "detail-card" : ""} ${selected ? "is-selected" : ""}`}>
       <div className="card-image-wrap">
         <button type="button" className="image-button" onClick={onPreview} aria-label={`Preview ${card.name}`}><img src={card.imageUrl} alt="" loading="lazy" /></button>
+        <SelectionControl className="card-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} />
         <TradeStatusPill card={card} />
       </div>
       <div className="card-content">
@@ -55,10 +70,9 @@ export function CardView({ card, view, selected, wanted, onToggleSelected, onTog
         <p className="ownership-line">{card.owner} · {card.quantity} {card.quantity === 1 ? "copy" : "copies"}</p>
         {view === "details" && <><p className="type-line">{card.typeLine}</p><p className="oracle">{card.oracleText || "No Oracle text."}</p></>}
         <div className="card-footer">
-          <ColorDots card={card} />
+          <ManaSymbols card={card} />
           <div className="card-actions">
             <button type="button" className="small-action" onClick={onToggleWanted}>{wanted ? "Saved" : "Want"}</button>
-            {requestable && <label className="select-card"><input type="checkbox" checked={selected} onChange={onToggleSelected} aria-label={`${selected ? "Remove" : "Add"} ${card.name} from trade list`} /> <span>{selected ? "In list" : "Request"}</span></label>}
           </div>
         </div>
       </div>
@@ -67,7 +81,6 @@ export function CardView({ card, view, selected, wanted, onToggleSelected, onTog
 }
 
 export function FocusCard({ card, selected, wanted, onToggleSelected, onToggleWanted, onPreview }: Omit<CardViewProps, "view">) {
-  const requestable = isTradeRequestable(card);
   return (
     <article className="focus-card">
       <div className="focus-card-image"><button type="button" className="image-button" onClick={onPreview} aria-label={`Open full preview of ${card.name}`}><img src={card.imageUrl} alt="" /></button></div>
@@ -76,7 +89,7 @@ export function FocusCard({ card, selected, wanted, onToggleSelected, onToggleWa
         <p className="type-line">{card.typeLine}</p>
         <p className="focus-oracle">{card.oracleText || "No Oracle text."}</p>
         <dl className="focus-facts"><div><dt>Owner</dt><dd>{card.owner}</dd></div><div><dt>Quantity</dt><dd>{card.quantity} {card.quantity === 1 ? "copy" : "copies"}</dd></div><div><dt>Finish</dt><dd>{titleCase(card.finish)}</dd></div><div><dt>Condition</dt><dd>{titleCase(card.condition)}</dd></div><div><dt>Snapshot</dt><dd>{formatMoney(card.marketPrice)}</dd></div></dl>
-        <div className="focus-actions"><button type="button" className="secondary-action" onClick={onToggleWanted}>{wanted ? "Remove from wants" : "Add to wants"}</button>{requestable && <button type="button" className="primary-action" onClick={onToggleSelected}>{selected ? "Remove from trade list" : "Add to trade list"}</button>}</div>
+        <div className="focus-actions"><button type="button" className="secondary-action" onClick={onToggleWanted}>{wanted ? "Remove from wants" : "Add to wants"}</button><SelectionControl className="focus-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} label={selected ? "Selected" : "Select card"} /></div>
       </div>
     </article>
   );
