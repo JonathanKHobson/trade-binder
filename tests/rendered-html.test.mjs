@@ -30,6 +30,6 @@ test("server-renders the Trade Binder prototype shell", async () => {
   const html = await response.text();
   assert.match(html, /<title>Trade Binder<\/title>/i);
   assert.match(html, /Loading the Trade Binder/);
-  assert.match(html, /Indexing prints, conditions, and collection details/);
+  assert.match(html, /Indexing official prints, homebrew variants, and linked card faces/);
   assert.doesNotMatch(html, /react-loading-skeleton|Building your site|Your site is taking shape/i);
 });

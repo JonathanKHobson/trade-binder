@@ -3,7 +3,7 @@ import { TradeBinderPrototype } from "./components/TradeBinderPrototype";
 
 export const metadata: Metadata = {
   title: "Trade Binder",
-  description: "Browse exact prints, build a request, and start the right trade conversation.",
+  description: "Browse exact official prints and complete Homebrew Forge cards, variants, and linked faces.",
 };
 
 export default function Home() {

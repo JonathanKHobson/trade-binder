@@ -1,5 +1,5 @@
 import type { Filters } from "./tradeBrowser";
-import type { BinderSection, SortMode, ViewMode } from "./types";
+import type { BinderSection, SortMode, VariantDisplayMode, ViewMode } from "./types";
 
 const validSections = new Set<BinderSection>(["browse", "homebrew", "wants", "contact"]);
 const validViews = new Set<ViewMode>(["grid", "details", "list", "focus"]);
@@ -11,6 +11,7 @@ export type ShareState = {
   activeSection: BinderSection;
   view: ViewMode;
   sort: SortMode;
+  variantDisplay: VariantDisplayMode;
   filters: Filters;
 };
 
@@ -20,6 +21,7 @@ const textFields: Array<[SharedTextFilter, string]> = [
   ["text", "q"], ["oracle", "oracle"], ["binder", "binder"], ["owner", "owner"], ["tradability", "trade"],
   ["set", "set"], ["type", "type"], ["rarity", "rarity"], ["finish", "finish"], ["condition", "condition"],
   ["language", "language"], ["location", "location"], ["minPrice", "min"], ["maxPrice", "max"], ["manaValue", "mv"],
+  ["variantPolicy", "export"],
 ];
 
 export function readShareState(defaults: ShareState): ShareState {
@@ -41,10 +43,12 @@ export function readShareState(defaults: ShareState): ShareState {
 
   const view = params.get("view");
   const sort = params.get("sort");
+  const variantDisplay = params.get("variants") === "separate" ? "separate" : "grouped";
   return {
     activeSection: requestedSection,
     view: view && validViews.has(view as ViewMode) ? view as ViewMode : defaults.view,
     sort: sort && validSorts.has(sort as SortMode) ? sort as SortMode : defaults.sort,
+    variantDisplay,
     filters,
   };
 }
@@ -57,6 +61,7 @@ export function shareUrl(state: ShareState) {
   if (state.activeSection === "wants" || state.activeSection === "contact") url.searchParams.set("section", state.activeSection);
   if (state.view !== "grid") url.searchParams.set("view", state.view);
   if (state.sort !== "name") url.searchParams.set("sort", state.sort);
+  if (state.activeSection === "homebrew" && state.variantDisplay === "separate") url.searchParams.set("variants", "separate");
   for (const [key, parameter] of textFields) if (filters[key]) url.searchParams.set(parameter, String(filters[key]));
   if (filters.colors.length) url.searchParams.set("colors", filters.colors.join(","));
   if (filters.colorMode !== "any") url.searchParams.set("colorMode", filters.colorMode);

@@ -23,8 +23,10 @@ export const titleCase = (value: string) =>
     .replaceAll("_", " ")
     .replace(/\b\w/g, (character) => character.toUpperCase());
 
-export const cardColors = (card: Card) =>
-  card.colorIdentity.length > 0 ? card.colorIdentity : ["C"];
+export const cardColors = (card: Card) => {
+  const identity = Array.isArray(card.colorIdentity) ? card.colorIdentity : String(card.colorIdentity || "").split("");
+  return identity.length > 0 ? identity : ["C"];
+};
 
 export const comparatorMatches = (
   actual: number | null,

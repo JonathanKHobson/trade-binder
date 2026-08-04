@@ -65,6 +65,7 @@ export function consolidatePrints(cards: Card[]): Card[] {
  */
 export function applyPublicTradePolicy(cards: Card[]): Card[] {
   return cards.map((card) => {
+    if (card.homebrew) return card;
     const sourceTradeStatus = String(card.sourceTradeStatus ?? card.tradeStatus ?? "").trim().toLowerCase();
     const explicitlyProtected = protectedSourceStatuses.has(sourceTradeStatus)
       || (sourceTradeStatus === "not_for_trade" && Boolean(card.tradeNotes?.trim()))

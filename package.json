@@ -9,6 +9,8 @@
     "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
     "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "build:pages": "node scripts/build-github-pages.mjs",
+    "generate:homebrew": "node --import ../../packages/forge/node_modules/tsx/dist/loader.mjs scripts/generate-homebrew-data.ts",
+    "qa:homebrew": "node scripts/qa-homebrew-browser.mjs",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
     "test": "vinext build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",

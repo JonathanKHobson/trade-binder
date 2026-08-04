@@ -22,6 +22,7 @@ export type Filters = {
   colorMode: ColorMode;
   altered: "" | "yes";
   playtest: "" | "yes";
+  variantPolicy: string;
 };
 
 export const emptyFilters: Filters = {
@@ -45,6 +46,7 @@ export const emptyFilters: Filters = {
   colorMode: "any",
   altered: "",
   playtest: "",
+  variantPolicy: "",
 };
 
 export function distinct(cards: Card[], field: keyof Card) {
@@ -87,7 +89,7 @@ export function filterCards(cards: Card[], filters: Filters, sort: SortMode) {
   const query = filters.text.trim().toLowerCase();
   const oracle = filters.oracle.trim().toLowerCase();
   return sortCards(cards.filter((card) => {
-    const queryText = [card.name, card.setName, card.setCode, card.typeLine, card.owner, card.tradability.label, ...card.sourceBinders, ...card.sourceLocations].join(" ").toLowerCase();
+    const queryText = [card.name, card.variantName, card.variantKind, card.setName, card.setCode, card.typeLine, card.owner, card.designer, card.tradability.label, ...card.sourceBinders, ...card.sourceLocations].join(" ").toLowerCase();
     return (
       (!query || queryText.includes(query)) &&
       (!oracle || card.oracleText.toLowerCase().includes(oracle)) &&
@@ -103,6 +105,7 @@ export function filterCards(cards: Card[], filters: Filters, sort: SortMode) {
       (!filters.location || card.sourceLocations.includes(filters.location)) &&
       (!filters.altered || card.altered) &&
       (!filters.playtest || card.homebrew || card.proxy) &&
+      (!filters.variantPolicy || card.variantPolicy === filters.variantPolicy) &&
       matchesColors(card, filters) &&
       valueBetween(card.marketPrice, filters.minPrice, filters.maxPrice) &&
       comparatorMatches(card.manaValue, filters.manaValue, filters.manaComparator)

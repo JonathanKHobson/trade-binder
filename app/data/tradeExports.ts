@@ -11,23 +11,30 @@ const xmlEscape = (value: string | number | null | undefined) => String(value ??
 
 export function buildTradeRequest(cards: Card[]) {
   const list = cards.map((card) =>
-    `• ${card.quantity}× ${card.name} (${card.setCode.toUpperCase()} ${card.collectorNumber}, ${titleCase(card.finish)}, ${titleCase(card.condition)}, owner: ${card.owner}) — ${formatMoney(card.marketPrice)}`,
+    card.homebrew
+      ? `• ${card.name} (${card.setCode.toUpperCase()} ${card.collectorNumber}, variant: ${card.variantName}, export: ${titleCase(card.variantPolicy || "default")}, designer: ${card.designer || card.owner})`
+      : `• ${card.quantity}× ${card.name} (${card.setCode.toUpperCase()} ${card.collectorNumber}, ${titleCase(card.finish)}, ${titleCase(card.condition)}, owner: ${card.owner}) — ${formatMoney(card.marketPrice)}`,
   ).join("\n");
-  return `Hi! I’m interested in the following cards from your trade binder:\n\n${list}\n\nCould you let me know what you’re looking for in trade?`;
+  const includesHomebrew = cards.some((card) => card.homebrew);
+  return includesHomebrew
+    ? `Hi! I’m interested in these cards from your Trade Binder:\n\n${list}\n\nFor homebrew entries, I understand this is a digital design listing and does not confirm that a physical copy exists.`
+    : `Hi! I’m interested in the following cards from your trade binder:\n\n${list}\n\nCould you let me know what you’re looking for in trade?`;
 }
 
 export function buildTradeCsv(cards: Card[]) {
-  const headings = ["name", "quantity", "owner", "source_binders", "set_code", "set_name", "collector_number", "finish", "condition", "language", "market_price", "market_currency", "rarity", "type_line", "color_identity", "scryfall_uri"];
-  const rows = cards.map((card) => [card.name, card.quantity, card.owner, card.sourceBinders.join("; "), card.setCode.toUpperCase(), card.setName, card.collectorNumber, card.finish, card.condition, card.language, card.marketPrice, "USD", card.rarity, card.typeLine, card.colorIdentity.join(""), card.scryfallUri]);
+  const headings = ["name", "quantity", "owner", "designer", "source_binders", "set_code", "set_name", "collector_number", "variant_id", "variant_name", "variant_policy", "face_count", "finish", "condition", "language", "market_price", "market_currency", "rarity", "type_line", "color_identity", "scryfall_uri"];
+  const rows = cards.map((card) => [card.name, card.quantity, card.owner, card.designer, card.sourceBinders.join("; "), card.setCode.toUpperCase(), card.setName, card.collectorNumber, card.variantId, card.variantName, card.variantPolicy, card.faces?.length || 1, card.finish, card.condition, card.language, card.marketPrice, "USD", card.rarity, card.typeLine, card.colorIdentity.join(""), card.scryfallUri]);
   return [headings, ...rows].map((row) => row.map(csvEscape).join(",")).join("\n");
 }
 
 export function buildTradeText(cards: Card[]) {
-  return cards.map((card) => `${card.quantity} ${card.name} (${card.setCode.toUpperCase()}) ${card.collectorNumber}\n# Owner: ${card.owner} | Finish: ${titleCase(card.finish)} | Condition: ${titleCase(card.condition)} | Snapshot: ${formatMoney(card.marketPrice)}`).join("\n\n");
+  return cards.map((card) => card.homebrew
+    ? `1 ${card.name} (${card.setCode.toUpperCase()}) ${card.collectorNumber}\n# Variant: ${card.variantName} | Export: ${titleCase(card.variantPolicy || "default")} | Designer: ${card.designer || card.owner} | Faces: ${card.faces?.length || 1}`
+    : `${card.quantity} ${card.name} (${card.setCode.toUpperCase()}) ${card.collectorNumber}\n# Owner: ${card.owner} | Finish: ${titleCase(card.finish)} | Condition: ${titleCase(card.condition)} | Snapshot: ${formatMoney(card.marketPrice)}`).join("\n\n");
 }
 
 export function buildTradeXml(cards: Card[]) {
-  const cardRows = cards.map((card) => `  <card name="${xmlEscape(card.name)}" quantity="${card.quantity}" owner="${xmlEscape(card.owner)}" set_code="${xmlEscape(card.setCode.toUpperCase())}" collector_number="${xmlEscape(card.collectorNumber)}" finish="${xmlEscape(card.finish)}" condition="${xmlEscape(card.condition)}" market_price="${xmlEscape(card.marketPrice)}" scryfall_uri="${xmlEscape(card.scryfallUri)}" />`).join("\n");
+  const cardRows = cards.map((card) => `  <card name="${xmlEscape(card.name)}" quantity="${card.quantity}" owner="${xmlEscape(card.owner)}" designer="${xmlEscape(card.designer)}" set_code="${xmlEscape(card.setCode.toUpperCase())}" collector_number="${xmlEscape(card.collectorNumber)}" variant_id="${xmlEscape(card.variantId)}" variant_name="${xmlEscape(card.variantName)}" variant_policy="${xmlEscape(card.variantPolicy)}" face_count="${card.faces?.length || 1}" finish="${xmlEscape(card.finish)}" condition="${xmlEscape(card.condition)}" market_price="${xmlEscape(card.marketPrice)}" scryfall_uri="${xmlEscape(card.scryfallUri)}" />`).join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<tradeSelection>\n${cardRows}\n</tradeSelection>\n`;
 }
 

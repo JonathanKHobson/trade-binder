@@ -15,6 +15,16 @@ type CardViewProps = {
   onToggleSelected: () => void;
   onToggleWanted: () => void;
   onPreview: () => void;
+  variantNavigation?: CardStepNavigation;
+  faceNavigation?: CardStepNavigation;
+};
+
+export type CardStepNavigation = {
+  position: number;
+  count: number;
+  label: string;
+  onPrevious?: () => void;
+  onNext: () => void;
 };
 
 function ManaSymbols({ card }: { card: Card }) {
@@ -27,6 +37,26 @@ function ManaSymbols({ card }: { card: Card }) {
 
 function TradeStatusPill({ card }: { card: Card }) {
   return <span className={`inquiry-pill status-${card.tradability.key}`}>{card.tradability.label}</span>;
+}
+
+function stopNavigation(action: () => void) {
+  return (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+    action();
+  };
+}
+
+function CardImageControls({ card, variantNavigation, faceNavigation }: { card: Card; variantNavigation?: CardStepNavigation; faceNavigation?: CardStepNavigation }) {
+  return <>
+    {variantNavigation && variantNavigation.count > 1 && <div className="variant-controls" aria-label={`${card.name} variants`}>
+      <button type="button" onClick={stopNavigation(variantNavigation.onPrevious || variantNavigation.onNext)} aria-label={`Previous variant of ${card.name}`}>‹</button>
+      <span><b>{variantNavigation.position}</b> / {variantNavigation.count}<small>variants</small></span>
+      <button type="button" onClick={stopNavigation(variantNavigation.onNext)} aria-label={`Next variant of ${card.name}`}>›</button>
+    </div>}
+    {faceNavigation && faceNavigation.count > 1 && <button type="button" className="face-toggle" onClick={stopNavigation(faceNavigation.onNext)} aria-label={`Show ${faceNavigation.position === 1 ? "back" : "front"} face of ${card.name}`}>
+      <span aria-hidden="true">↻</span>{faceNavigation.position === 1 ? "Back" : "Front"}
+    </button>}
+  </>;
 }
 
 type SelectionControlProps = {
@@ -42,17 +72,17 @@ export function SelectionControl({ cardName, selected, onToggle, className = "",
   return <label className={`selection-check ${className}`} title={`${action} ${cardName}`}><input type="checkbox" checked={selected} onChange={onToggle} aria-label={`${action} ${cardName} for export, sharing, or a trade request`} /><span aria-hidden="true">✓</span>{label && <b>{label}</b>}</label>;
 }
 
-export function CardView({ card, view, selected, wanted, onToggleSelected, onToggleWanted, onPreview }: CardViewProps) {
+export function CardView({ card, view, selected, wanted, onToggleSelected, onToggleWanted, onPreview, variantNavigation, faceNavigation }: CardViewProps) {
   if (view === "list") {
     return (
       <article className={`list-card ${selected ? "is-selected" : ""}`}>
         <SelectionControl className="list-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} />
         <button type="button" className="list-card-name" onClick={onPreview}>{card.name}</button>
-        <span className="list-card-print">{card.setCode.toUpperCase()} {card.collectorNumber} · {card.owner} · {card.quantity} {card.quantity === 1 ? "copy" : "copies"}</span>
+        <span className="list-card-print">{card.setCode.toUpperCase()} {card.collectorNumber} · {card.homebrew ? card.variantName : card.owner} {card.homebrew && card.variantCount ? `· ${card.variantCount} variants` : `· ${card.quantity} ${card.quantity === 1 ? "copy" : "copies"}`}</span>
         <span className="list-card-type">{card.typeBucket}</span>
         <TradeStatusPill card={card} />
         <strong>{formatMoney(card.marketPrice)}</strong>
-        <button type="button" className="small-action" onClick={onToggleWanted}>{wanted ? "Saved" : "Want"}</button>
+        <span className="list-actions">{variantNavigation && variantNavigation.count > 1 && <><button type="button" className="step-action" onClick={variantNavigation.onPrevious || variantNavigation.onNext} aria-label={`Previous variant of ${card.name}`}>‹</button><button type="button" className="step-action" onClick={variantNavigation.onNext} aria-label={`Next variant of ${card.name}`}>›</button></>}<button type="button" className="small-action" onClick={onToggleWanted}>{wanted ? "Saved" : "Want"}</button></span>
       </article>
     );
   }
@@ -60,14 +90,15 @@ export function CardView({ card, view, selected, wanted, onToggleSelected, onTog
   return (
     <article className={`card-tile ${view === "details" ? "detail-card" : ""} ${selected ? "is-selected" : ""}`}>
       <div className="card-image-wrap">
-        <button type="button" className="image-button" onClick={onPreview} aria-label={`Preview ${card.name}`}><img src={card.imageUrl} alt="" loading="lazy" /></button>
+        <button type="button" className="image-button" onClick={onPreview} aria-label={`Preview ${card.name}`}><img src={card.imageUrl} alt={`${card.name}${card.activeFaceIndex ? " back face" : " card"}`} loading="lazy" /></button>
         <SelectionControl className="card-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} />
         <TradeStatusPill card={card} />
+        <CardImageControls card={card} variantNavigation={variantNavigation} faceNavigation={faceNavigation} />
       </div>
       <div className="card-content">
         <div className="card-title-row"><h3>{card.name}</h3><strong>{formatMoney(card.marketPrice)}</strong></div>
-        <p className="print-line">{card.setName} · {card.setCode.toUpperCase()} {card.collectorNumber} · {titleCase(card.finish)}</p>
-        <p className="ownership-line">{card.owner} · {card.quantity} {card.quantity === 1 ? "copy" : "copies"}</p>
+        <p className="print-line">{card.setName} · {card.setCode.toUpperCase()} {card.collectorNumber} · {card.homebrew ? card.variantName : titleCase(card.finish)}</p>
+        <p className="ownership-line">{card.homebrew ? `Designed by ${card.designer || card.owner} · ${titleCase(card.variantPolicy || "default")} export` : `${card.owner} · ${card.quantity} ${card.quantity === 1 ? "copy" : "copies"}`}</p>
         {view === "details" && <><p className="type-line">{card.typeLine}</p><p className="oracle">{card.oracleText || "No Oracle text."}</p></>}
         <div className="card-footer">
           <ManaSymbols card={card} />
@@ -80,15 +111,15 @@ export function CardView({ card, view, selected, wanted, onToggleSelected, onTog
   );
 }
 
-export function FocusCard({ card, selected, wanted, onToggleSelected, onToggleWanted, onPreview }: Omit<CardViewProps, "view">) {
+export function FocusCard({ card, selected, wanted, onToggleSelected, onToggleWanted, onPreview, variantNavigation, faceNavigation }: Omit<CardViewProps, "view">) {
   return (
     <article className="focus-card">
-      <div className="focus-card-image"><button type="button" className="image-button" onClick={onPreview} aria-label={`Open full preview of ${card.name}`}><img src={card.imageUrl} alt="" /></button></div>
+      <div className="focus-card-image"><button type="button" className="image-button" onClick={onPreview} aria-label={`Open full preview of ${card.name}`}><img src={card.imageUrl} alt={`${card.name}${card.activeFaceIndex ? " back face" : " card"}`} /></button><CardImageControls card={card} variantNavigation={variantNavigation} faceNavigation={faceNavigation} /></div>
       <div className="focus-card-copy">
         <div><p className="eyebrow">{card.setName} · {card.setCode.toUpperCase()} {card.collectorNumber}</p><h3>{card.name}</h3><TradeStatusPill card={card} /></div>
         <p className="type-line">{card.typeLine}</p>
         <p className="focus-oracle">{card.oracleText || "No Oracle text."}</p>
-        <dl className="focus-facts"><div><dt>Owner</dt><dd>{card.owner}</dd></div><div><dt>Quantity</dt><dd>{card.quantity} {card.quantity === 1 ? "copy" : "copies"}</dd></div><div><dt>Finish</dt><dd>{titleCase(card.finish)}</dd></div><div><dt>Condition</dt><dd>{titleCase(card.condition)}</dd></div><div><dt>Snapshot</dt><dd>{formatMoney(card.marketPrice)}</dd></div></dl>
+        <dl className="focus-facts"><div><dt>{card.homebrew ? "Designer" : "Owner"}</dt><dd>{card.designer || card.owner}</dd></div><div><dt>{card.homebrew ? "Variant" : "Quantity"}</dt><dd>{card.homebrew ? card.variantName : `${card.quantity} ${card.quantity === 1 ? "copy" : "copies"}`}</dd></div><div><dt>{card.homebrew ? "Export policy" : "Finish"}</dt><dd>{titleCase(card.homebrew ? card.variantPolicy || "default" : card.finish)}</dd></div><div><dt>{card.homebrew ? "Faces" : "Condition"}</dt><dd>{card.homebrew ? card.faces?.length || 1 : titleCase(card.condition)}</dd></div>{!card.homebrew && <div><dt>Snapshot</dt><dd>{formatMoney(card.marketPrice)}</dd></div>}</dl>
         <div className="focus-actions"><button type="button" className="secondary-action" onClick={onToggleWanted}>{wanted ? "Remove from wants" : "Add to wants"}</button><SelectionControl className="focus-selection" cardName={card.name} selected={selected} onToggle={onToggleSelected} label={selected ? "Selected" : "Select card"} /></div>
       </div>
     </article>

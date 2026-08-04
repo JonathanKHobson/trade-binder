@@ -36,6 +36,29 @@ export type Card = {
   sourceTradeStatus?: string;
   tradeNotes?: string;
   tradability: { key: string; label: string; rank: number; reason: string };
+  baseCardId?: string;
+  variantId?: string;
+  variantName?: string;
+  variantKind?: string;
+  variantPolicy?: "default" | "optional";
+  variantStatus?: string;
+  isPrimaryVariant?: boolean;
+  variantCount?: number;
+  designer?: string;
+  activeFaceIndex?: number;
+  faces?: CardFaceImage[];
+};
+
+export type CardFaceImage = {
+  faceIndex: number;
+  faceName: string;
+  manaCost: string;
+  typeLine: string;
+  oracleText: string;
+  imageUrl: string;
+  largeImageUrl: string;
+  width: number;
+  height: number;
 };
 
 export type BinderData = {
@@ -48,9 +71,22 @@ export type BinderData = {
   cards: Card[];
 };
 
+export type HomebrewBinderData = {
+  summary: {
+    generatedAt: string;
+    uniqueCards: number;
+    totalVariants: number;
+    totalFaces: number;
+    setCount: number;
+    sets: Array<{ code: string; name: string; cards: number; variants: number; faces: number }>;
+  };
+  cards: Card[];
+};
+
 export type Comparator = "eq" | "gt" | "lt";
 export type ColorMode = "any" | "all" | "exact";
 export type ViewMode = "grid" | "details" | "list" | "focus";
 export type SortMode = "name" | "price-high" | "price-low" | "set";
 export type BinderSection = "browse" | "wants" | "contact" | "homebrew";
 export type ThemeMode = "light" | "dark";
+export type VariantDisplayMode = "grouped" | "separate";
