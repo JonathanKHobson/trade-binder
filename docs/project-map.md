@@ -27,7 +27,7 @@ Deliver a finished, light-first public Trade Binder with two explicit scopes: de
 - `app/data/tradeExports.ts` owns trade-request text and CSV/text/XML selection exports.
 - `app/data/tradeConfig.ts` owns the intentionally explicit public-contact setting.
 - `app/globals.css` owns the isolated visual system and responsive behavior.
-- `public/data/cards.json` is a read-only collection snapshot. Refresh it from the canonical collection generator; do not hand-edit it.
+- `public/data/cards.json` is a compact read-only collection manifest and `public/data/cards.json.gz` is its complete generated physical-card catalogue. `scripts/refresh-owned-cards.mjs` regenerates both from a validated Homebrew Forge public snapshot, preserving explicit duplicate quantities, print finish, condition, and collection provenance; do not hand-edit either data artifact.
 - `public/data/homebrew-cards.json` is generated from current Homebrew Forge set CSVs. It includes every non-archived variant whose export policy is `default` or `optional`, excludes `DEMO`, and connects all authored faces.
 - `public/assets/mana/` owns the mana symbols used by the color-identity filter; `public/assets/local-card-images/` mirrors snapshot-referenced local image files.
 - `public/assets/homebrew-cards/` contains web-sized 488×680 complete-card renders from the same shared `CardSvg` path used by Maker previews; landscape layouts preserve their full canvas.

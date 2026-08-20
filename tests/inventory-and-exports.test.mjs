@@ -3,6 +3,7 @@ import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { gunzipSync } from "node:zlib";
 import test from "node:test";
 import ts from "typescript";
 
@@ -33,8 +34,15 @@ async function importDataModules() {
   }
 }
 
+async function readOfficialData() {
+  const manifest = JSON.parse(await readFile(new URL("../public/data/cards.json", import.meta.url), "utf8"));
+  if (!manifest.compressedCatalogue) return manifest;
+  const catalogue = await readFile(new URL(`../public/data/${manifest.compressedCatalogue.path}`, import.meta.url));
+  return JSON.parse(gunzipSync(catalogue).toString("utf8"));
+}
+
 test("the public trade policy defaults to Ask about trade and retains explicit protections", async () => {
-  const data = JSON.parse(await readFile(new URL("../public/data/cards.json", import.meta.url), "utf8"));
+  const data = await readOfficialData();
   const { directory, inventory } = await importDataModules();
 
   try {
@@ -59,7 +67,7 @@ test("the public trade policy defaults to Ask about trade and retains explicit p
 });
 
 test("selection exports retain exact-print and ownership fields", async () => {
-  const data = JSON.parse(await readFile(new URL("../public/data/cards.json", import.meta.url), "utf8"));
+  const data = await readOfficialData();
   const { directory, inventory, exports } = await importDataModules();
 
   try {

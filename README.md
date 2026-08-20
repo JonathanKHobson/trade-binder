@@ -15,7 +15,7 @@ Trade Binder is a public, read-only Magic collection browser for exact prints. I
 
 ## Source boundaries
 
-- `public/data/cards.json` is a read-only generated collection snapshot. Refresh it from the canonical collection generator; do not hand-edit it.
+- `public/data/cards.json` is a compact, read-only generated collection manifest; `public/data/cards.json.gz` is its complete generated physical-card catalogue. Refresh both with `scripts/refresh-owned-cards.mjs`; do not hand-edit either.
 - `app/data/inventory.ts` consolidates only indistinguishable physical copies at display time. It never changes the source snapshot.
 - Wants and display preference are intentionally stored only in the visitor’s browser.
 - Set `app/data/tradeConfig.ts` only after confirming the exact public email address that should receive trade requests.

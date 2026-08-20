@@ -4,6 +4,7 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 import { baseCardIdentity, cardWithActiveFace, groupHomebrewCards, homebrewResults } from "../data/homebrewBrowser";
 import { applyPublicTradePolicy, consolidatePrints } from "../data/inventory";
 import { colorMeta, formatMoney, titleCase } from "../data/mtg";
+import { loadOfficialBinderData } from "../data/officialData";
 import { readShareState, shareUrl } from "../data/shareState";
 import { activeFilterCount, distinct, emptyFilters, filterCards, type Filters } from "../data/tradeBrowser";
 import { tradeContact } from "../data/tradeConfig";
@@ -70,7 +71,7 @@ export function TradeBinderPrototype() {
 
   const loadCards = useCallback(() => {
     Promise.all([
-      fetch(new URL("./data/cards.json", window.location.href)).then((response) => response.ok ? response.json() : Promise.reject(new Error("Unable to load official cards"))),
+      loadOfficialBinderData(new URL("./data/cards.json", window.location.href)),
       fetch(new URL("./data/homebrew-cards.json", window.location.href)).then((response) => response.ok ? response.json() : Promise.reject(new Error("Unable to load homebrew cards"))),
     ])
       .then(([official, homebrew]: [BinderData, HomebrewBinderData]) => {
