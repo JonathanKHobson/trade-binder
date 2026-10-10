@@ -42,6 +42,8 @@ Deliver a finished, light-first public Trade Binder with two explicit scopes: de
 
 ## Deployment boundary
 
+The root README supplies setup and refresh commands; `AGENTS.md` records editing boundaries. `generate:homebrew` imports the Forge package and renderer from an enclosing workspace and reads its `sets/` directory. That source layout is not included in a standalone clone. The physical-card refresh instead requires an explicit validated snapshot argument (or `TRADE_BINDER_SOURCE_SNAPSHOT`). Do not confuse either data-generation route with `build:pages`, which builds the website from its available public inputs.
+
 The repository deploys its own public Trade Binder through GitHub Pages. The old Homebrew Forge shareable routes are redirect-only compatibility paths; they do not own the production app or duplicate its source.
 
 ## Deliberate exclusions
