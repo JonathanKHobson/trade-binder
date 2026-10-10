@@ -2,7 +2,7 @@
 
 Trade Binder is a public, read-only Magic collection browser for exact prints. It preserves the owner, finish, condition, source, and trade status of each record while giving visitors a compact way to search cards and assemble an inquiry.
 
-[Open the public Trade Binder](https://jonathankhobson.github.io/trade-binder/). The `main` branch contains application source and generated public data; GitHub Pages serves the generated `gh-pages` branch.
+[Open the public Trade Binder](https://gamemaster-kyle.jkylehobson.chatgpt.site/trade-binder/). The `main` branch contains application source and generated public data. The native GameMasterKyle Site serves a pinned projection of the approved `gh-pages` output. GitHub Pages retains the generated branch as a compatibility address and original asset origin.
 
 ## What it covers
 
@@ -35,6 +35,8 @@ npm run build:pages
 ```
 
 `npm run build:pages` prerenders the client and prepares `dist/client/` for the generated `gh-pages` release branch. Do not hand-edit that branch; it is the static deployment artifact for the public GitHub Pages site.
+
+The Pages builder adds a small equivalent-route forwarding script to `index.html`. A visitor can use `_legacy=1` to remain on the original Pages origin when browser-saved state is needed. The new Site's `/transfer/` page accepts the visitor's local state export from the original Pages origin. Keep this compatibility behavior when regenerating `gh-pages`.
 
 For a standalone checkout with dependencies installed, the focused inventory/export and homebrew grouping checks are:
 
